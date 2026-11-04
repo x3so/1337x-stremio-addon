@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>1337x Popular XXX Movies</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/stremio-addon-sdk@latest/dist/sdk.min.js"></script>
+</head>
+<body>
+    <h2>Loading movies from 1337x...</h2>
+
+    <script type="text/javascript">
+        const sdk = new StremioSDK();
+
+        sdk.init({
+            name: "1337x Popular XXX Movies",
+            version: "1.0.0",
+            author: "Your Name",
+            description: "Shows popular XXX movies from 1337x.la"
+        });
+
+        // Fetch and display content
+        fetch('https://1337x.la/popular-xxx')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                let movies = [];
+                const links = doc.querySelectorAll('.torrent-list a[href^="/torrent/"]');
+
+                for (let link of links) {
+                    const title = link.textContent.trim();
+                    if (!title || !link.href.includes('/torrent/')) continue;
+
+                    // Extract the actual movie URL
+                    const url = 'https://1337x.la' + link.getAttribute('href');
+                    movies.push({
+                        type: "movie",
+                        title: title,
+                        url: url
+                    });
+                }
+
+                sdk.addContent(movies);
+            })
+            .catch(err => {
+                console.error("Error fetching 1337x:", err);
+                sdk.addContent([
+                    {type: "movie", title: "Failed to load movies", url: "#"}
+                ]);
+            });
+
+        // Optional: Show loading message
+        setTimeout(() => {
+            if (document.body) document.body.innerHTML = "<h2>Fetching popular XXX movies...</h2>";
+        }, 1000);
+    </script>
+</body>
+</html>
